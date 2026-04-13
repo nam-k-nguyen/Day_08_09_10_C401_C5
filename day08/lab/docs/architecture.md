@@ -60,17 +60,33 @@ Nhóm phát triển một hệ thống RAG nội bộ giúp tra cứu và trả 
 | Top-k select | 3 |
 | Rerank | Không |
 
-### Variant (Sprint 3)
+### Variant (Sprint 3) — Dense + Rerank
+
+> **Tuân thủ A/B Rule:** chỉ đổi **đúng 1 biến** so với baseline (`use_rerank: False → True`). Các variant khác (Hybrid-only, Hybrid + Rerank) được thử nghiệm song song và ghi lại đầy đủ trong [`tuning-log.md`](tuning-log.md) để so sánh, nhưng **variant được chọn chính thức để chạy grading là Dense + Rerank**.
+
 | Tham số | Giá trị | Thay đổi so với baseline |
 |---------|---------|------------------------|
-| Strategy | Hybrid (Dense + Sparse) | Đổi từ Dense sang Hybrid |
+| Strategy | Dense (embedding similarity) | Giữ nguyên |
 | Top-k search | 10 | Giữ nguyên |
 | Top-k select | 3 | Giữ nguyên |
-| Rerank | Cross-encoder | Thêm bước Rerank |
+| **Rerank** | **Cross-encoder (ms-marco-MiniLM-L-6-v2)** | **Thêm bước Rerank ← biến duy nhất thay đổi** |
 | Query transform | Không | Giữ nguyên |
 
-**Lý do chọn variant này:**
-> Chọn Hybrid kết hợp Rerank (Cross-encoder) để cải thiện độ chính xác (relevance) của kết quả truy xuất, đặc biệt đối với các câu hỏi chứa keyword cụ thể, thuật ngữ hoặc tên riêng (như mã lỗi, access level). Dense search giỏi bắt ý nghĩa ngữ cảnh nhưng có thể bỏ lỡ keyword chính xác, nên bù đắp bằng Sparse (BM25). Sau đó, dùng Cross-encoder để rerank các chunk top-10 giúp tinh chọn ra 3 chunk phù hợp nhất đưa vào ngữ cảnh, thay vì chỉ dựa vào similarity score mặc định. Kết quả thực tế cho thấy điểm Relevance trung bình đã cải thiện từ 4.20 (Baseline) lên 4.40 (Variant).
+**Lý do chọn biến này:**
+> Baseline cho thấy retriever Dense đã mang đủ evidence (**Context Recall = 5.00/5** — mọi expected source đều được retrieve). Vấn đề không nằm ở "tìm đủ chunk" mà ở "chọn đúng 3 chunk tốt nhất đưa vào prompt" — trong top-3 vẫn có chunk nhiễu (tangentially-related) ảnh hưởng Faithfulness và Relevance. Cross-encoder rerank chấm lại từng cặp `(query, chunk)` trên top-10 candidates bằng mô hình được fine-tune cho ranking → giữ top-3 thật sự liên quan → tăng Faithfulness + Relevance mà **không cần đụng tới retrieval pipeline** (giữ đúng A/B rule).
+>
+> Nhóm cũng đã thử `retrieval_mode = hybrid` (Variant 2) nhưng không cải thiện do corpus nhỏ (29 chunks) và BM25 tokenize tiếng Việt yếu (`text.lower().split()` — không xử lý dấu/từ ghép). Chi tiết bằng chứng ở `tuning-log.md §Variant 2`.
+
+**Kết quả thực tế (scorecard):**
+
+|Metric|Baseline (Dense)|Variant (Dense + Rerank)|Delta|
+|------|----------------|------------------------|-----|
+|Faithfulness|4.20 / 5|**4.30 / 5**|**+0.10**|
+|Answer Relevance|4.20 / 5|**4.50 / 5**|**+0.30**|
+|Context Recall|5.00 / 5|5.00 / 5|0.00|
+|Completeness|4.00 / 5|4.00 / 5|0.00|
+
+> Variant thắng baseline rõ ràng ở Relevance mà không giảm metric nào → đây là cấu hình được dùng trong `run_grading.py` (`VARIANT_CONFIG`).
 
 ---
 
@@ -129,50 +145,43 @@ Context:
 
 ## 6. Sơ đồ Pipeline tổng thể
 
-Sơ đồ thể hiện luồng truy vấn nâng cao sử dụng Hybrid Search (kết hợp Dense và Sparse) tiếp nối bởi Cross-encoder Reranking, định hình theo kiến trúc ưu tú nhất (Variant 1) của hệ thống:
+Sơ đồ thể hiện luồng truy vấn của **variant chính thức (Dense + Rerank)** — được dùng trong `run_grading.py` để chạy grading questions. Đây là biến duy nhất thay đổi so với baseline (thêm bước Cross-encoder Rerank):
 
 ```mermaid
 graph TD
     %% User Input
-    Q([User Query]) --> SPLIT{Hybrid Search}
+    Q([User Query]) --> DE[Query Embedding]
 
-    %% Hybrid Retrieval Flow
-    SPLIT -->|Dense (Ngữ nghĩa)| DE[Query Embedding]
-    SPLIT -->|Sparse (Từ khóa)| SP[BM25 Tokenization]
-    
-    DE --> VDB[(ChromaDB Vector Store)]
-    SP --> BMDB[(BM25 Keyword Index)]
-    
-    VDB --> DS[Dense Candidates]
-    BMDB --> SS[Sparse Candidates]
-    
-    DS --> RRF[Reciprocal Rank Fusion]
-    SS --> RRF
-    
-    RRF --> TOP10[Top-10 Candidates]
-    
+    %% Dense Retrieval Flow
+    DE --> VDB[(ChromaDB Vector Store<br/>29 chunks, cosine similarity)]
+    VDB --> TOP10[Top-10 Dense Candidates]
+
     %% Reranking & Selection Flow
-    TOP10 --> RR{Cross-Encoder Rerank}
-    Q -.-> RR
+    TOP10 --> RR{Cross-Encoder Rerank<br/>ms-marco-MiniLM-L-6-v2}
+    Q -.->|query-chunk pairs| RR
     RR -->|Re-score pairs| R[Ranked Candidates]
     R --> T3[Select Top-3 Chunks]
-    
+
     %% Generation Flow
-    T3 --> CB[Build Context Block]
-    CB --> GP[Grounded Prompt]
+    T3 --> CB[Build Context Block<br/>+ metadata: source, section, date]
+    CB --> GP[Grounded Prompt<br/>evidence-only + abstain rule]
     Q -.-> GP
-    
-    GP --> LLM[[LLM: gpt-4o-mini]]
+
+    GP --> LLM[[LLM: gpt-4o-mini<br/>temperature=0, max_tokens=512]]
     LLM --> ANS([Answer + Citations])
-    
+
     %% Styling
     classDef io fill:#f0f4fa,stroke:#0055ff,stroke-width:2px;
     classDef process fill:#fff,stroke:#333,stroke-width:1px;
     classDef db fill:#f9f2e7,stroke:#e69000,stroke-width:2px;
     classDef llm fill:#e6f9ec,stroke:#00ab41,stroke-width:2px;
+    classDef highlight fill:#fff4e6,stroke:#e67300,stroke-width:2px;
 
     class Q,ANS io;
-    class VDB,BMDB db;
+    class VDB db;
     class LLM llm;
-    class DE,SP,DS,SS,RRF,TOP10,RR,R,T3,CB,GP process;
+    class DE,TOP10,R,T3,CB,GP process;
+    class RR highlight;
 ```
+
+> **Lưu ý:** các sơ đồ pipeline tham khảo cho Hybrid và Hybrid + Rerank (đã thử nghiệm nhưng không chọn) được giữ trong `tuning-log.md` để phục vụ audit A/B.
