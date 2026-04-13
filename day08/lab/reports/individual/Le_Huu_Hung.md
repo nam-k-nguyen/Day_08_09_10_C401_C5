@@ -47,4 +47,4 @@ Tôi sẽ thử thêm **score threshold** vào pipeline: nếu chunk có score t
 
 ---
 
-*File: `reports/individual/le_huu_hung.md`*
+
