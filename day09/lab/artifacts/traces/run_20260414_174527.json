@@ -1,0 +1,132 @@
+{
+  "task": "Store credit khi hoàn tiền có giá trị bao nhiêu so với tiền gốc?",
+  "route_reason": "task contains policy/access keyword",
+  "risk_high": false,
+  "needs_tool": true,
+  "hitl_triggered": false,
+  "retrieved_chunks": [
+    {
+      "text": "2: CS Agent xem xét trong vòng 1 ngày làm việc và xác nhận điều kiện đủ điều kiện. Bước 3: Nếu đủ điều kiện, chuyển yêu cầu sang Finance Team để xử lý hoàn tiền. Bước 4: Finance Team xử lý trong 3-5 ngày làm việc và thông báo kết quả cho khách hàng. === Điều 5: Hình thức hoàn tiền === - Hoàn tiền qua phương thức thanh toán gốc: áp dụng trong 100% trường hợp đủ điều kiện. - Hoàn tiền qua credit nội bộ (store credit): khách hàng có thể chọn nhận store credit thay thế với giá trị 110% so với số tiền hoàn. === Điều 6: Liên hệ và hỗ trợ === Email: cs-refund@company.internal Hotline nội bộ: ext. 1234 Giờ làm việc: Thứ 2 - Thứ 6, 8:00 - 17:30",
+      "source": "policy_refund_v4.txt",
+      "score": 0.6363,
+      "metadata": {
+        "source": "policy_refund_v4.txt",
+        "chunk_id": "policy_refund_v4.txt__chunk1"
+      }
+    },
+    {
+      "text": "chịu trách nhiệm gia hạn license phần mềm? A: IT Procurement team quản lý tất cả license. Nhắc nhở sẽ được gửi 30 ngày trước khi hết hạn. === Section 4: Thiết bị và phần cứng === Q: Laptop mới được cấp sau bao lâu khi vào công ty? A: Laptop được cấp trong ngày onboarding đầu tiên. Nếu có vấn đề, liên hệ HR hoặc IT Admin. Q: Laptop bị hỏng phải báo cáo như thế nào? A: Tạo ticket P2 hoặc P3 tùy mức độ nghiêm trọng. Mang thiết bị đến IT Room (tầng 3) để kiểm tra. === Section 5: Email và lịch === Q: Hộp thư đến đầy, phải làm gì? A: Xóa email cũ hoặc yêu cầu tăng dung lượng qua ticket IT-ACCESS. Dung lượng tiêu chuẩn là 50GB. Q: Tôi không nhận được email từ bên ngoài? A: Kiểm tra thư mục Spam trước. Nếu vẫn không có, tạo ticket P2 kèm địa chỉ email gửi và thời gian gửi. === Section 6: Liên hệ IT Helpdesk === Hotline: ext. 9000 (8:00 - 18:00, Thứ 2 - Thứ 6) Email: helpdesk@company.internal Jira: project IT-SUPPORT Slack: #it-helpdesk Emergency (ngoài giờ): ext. 9999",
+      "source": "it_helpdesk_faq.txt",
+      "score": 0.4665,
+      "metadata": {
+        "chunk_id": "it_helpdesk_faq.txt__chunk1",
+        "source": "it_helpdesk_faq.txt"
+      }
+    },
+    {
+      "text": "CHÍNH SÁCH HOÀN TIỀN - PHIÊN BẢN 4 Source: policy/refund-v4.pdf Department: CS Effective Date: 2026-02-01 Access: internal === Điều 1: Phạm vi áp dụng === Chính sách này áp dụng cho tất cả các đơn hàng được đặt trên hệ thống nội bộ kể từ ngày 01/02/2026. Các đơn hàng đặt trước ngày có hiệu lực sẽ áp dụng theo chính sách hoàn tiền phiên bản 3. === Điều 2: Điều kiện được hoàn tiền === Khách hàng được quyền yêu cầu hoàn tiền khi đáp ứng đủ các điều kiện sau: - Sản phẩm bị lỗi do nhà sản xuất, không phải do người dùng. - Yêu cầu được gửi trong vòng 7 ngày làm việc kể từ thời điểm xác nhận đơn hàng. - Đơn hàng chưa được sử dụng hoặc chưa bị mở seal. === Điều 3: Điều kiện áp dụng và ngoại lệ === Hoàn tiền — Điều kiện áp dụng: Yêu cầu được gửi trong vòng 7 ngày kể từ thời điểm xác nhận đơn hàng. Ngoại lệ không được hoàn tiền: - Sản phẩm thuộc danh mục hàng kỹ thuật số (license key, subscription). - Đơn hàng đã áp dụng mã giảm giá đặc biệt theo chương trình khuyến mãi Flash Sale. - Sản phẩm đã được kích hoạt hoặc đăng ký tài khoản. === Điều 4: Quy trình xử lý yêu cầu hoàn tiền === Bước 1: Khách hàng gửi yêu cầu qua hệ thống ticket nội bộ với category \"Refund Request\". Bước 2: CS Agent xem xét trong vòng 1 ngày làm việc và xác nhận điều kiện đủ điều kiện. Bước 3: Nếu đủ điều kiện, chuyển yêu cầu sang Finance Team để xử lý hoàn tiền. Bước 4: Finance Team xử lý trong 3-5 ngày làm việc và thông báo",
+      "source": "policy_refund_v4.txt",
+      "score": 0.4509,
+      "metadata": {
+        "source": "policy_refund_v4.txt",
+        "chunk_id": "policy_refund_v4.txt__chunk0"
+      }
+    }
+  ],
+  "retrieved_sources": [
+    "it_helpdesk_faq.txt",
+    "policy_refund_v4.txt"
+  ],
+  "policy_result": {
+    "policy_applies": false,
+    "policy_name": "refund_policy_v4",
+    "exceptions_found": [
+      {
+        "type": "flash_sale_exception",
+        "rule": "Flash Sale không được hoàn tiền",
+        "source": "policy_refund_v4.txt"
+      }
+    ],
+    "source": [
+      "it_helpdesk_faq.txt",
+      "policy_refund_v4.txt"
+    ],
+    "policy_version_note": "",
+    "explanation": "Hybrid rule-based + LLM analysis"
+  },
+  "mcp_tools_used": [],
+  "final_answer": "Giá trị store credit khi hoàn tiền là 110% so với số tiền gốc mà khách hàng đã thanh toán. Khách hàng có thể chọn nhận store credit thay thế trong trường hợp đủ điều kiện hoàn tiền [1]. \n\nKhông có ngoại lệ nào liên quan đến giá trị store credit trong tài liệu nội bộ.",
+  "sources": [
+    "policy_refund_v4.txt"
+  ],
+  "confidence": 0.68,
+  "history": [
+    "[supervisor] received task: Store credit khi hoàn tiền có giá trị bao nhiêu so với tiền gốc?",
+    "[supervisor] route=policy_tool_worker reason=task contains policy/access keyword",
+    "[retrieval_worker] retrieved 3 chunks from ['it_helpdesk_faq.txt', 'policy_refund_v4.txt']",
+    "[policy_tool_worker] policy_applies=False, exceptions=1",
+    "[synthesis_worker] answer_len=267, confidence=0.68, sources=['policy_refund_v4.txt']",
+    "[graph] completed in 12470ms"
+  ],
+  "workers_called": [
+    "retrieval_worker",
+    "policy_tool_worker",
+    "synthesis_worker"
+  ],
+  "supervisor_route": "policy_tool_worker",
+  "latency_ms": 12470,
+  "run_id": "run_20260414_174527",
+  "worker_io_logs": [
+    {
+      "worker": "retrieval_worker",
+      "input": {
+        "task": "Store credit khi hoàn tiền có giá trị bao nhiêu so với tiền gốc?",
+        "top_k": 3
+      },
+      "output": {
+        "chunks_count": 3,
+        "sources": [
+          "it_helpdesk_faq.txt",
+          "policy_refund_v4.txt"
+        ]
+      },
+      "error": null
+    },
+    {
+      "worker": "policy_tool_worker",
+      "input": {
+        "task": "Store credit khi hoàn tiền có giá trị bao nhiêu so với tiền gốc?",
+        "chunks_count": 3,
+        "needs_tool": true
+      },
+      "output": {
+        "policy_applies": false,
+        "exceptions_count": 1,
+        "mcp_calls": 0
+      },
+      "error": null
+    },
+    {
+      "worker": "synthesis_worker",
+      "timestamp": "2026-04-14T10:45:36.495248+00:00",
+      "input": {
+        "task": "Store credit khi hoàn tiền có giá trị bao nhiêu so với tiền gốc?",
+        "chunks_count": 3,
+        "has_policy": true,
+        "exceptions_count": 1
+      },
+      "output": {
+        "answer_length": 267,
+        "sources": [
+          "policy_refund_v4.txt"
+        ],
+        "sources_count": 1,
+        "confidence": 0.68,
+        "abstained": false,
+        "hitl_triggered": false
+      },
+      "error": null
+    }
+  ],
+  "question_id": "q10"
+}

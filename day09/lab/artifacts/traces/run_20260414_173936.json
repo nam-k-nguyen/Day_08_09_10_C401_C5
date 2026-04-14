@@ -1,0 +1,102 @@
+{
+  "task": "Nhân viên được làm remote tối đa mấy ngày mỗi tuần?",
+  "route_reason": "task contains retrieval/SLA keyword",
+  "risk_high": false,
+  "needs_tool": false,
+  "hitl_triggered": false,
+  "retrieved_chunks": [
+    {
+      "text": "muộn hơn nhưng phải được Line Manager đồng ý qua tin nhắn trực tiếp. === Phần 3: Chính sách làm thêm giờ === 3.1 Điều kiện làm thêm: Làm thêm giờ phải được Line Manager phê duyệt trước bằng văn bản. 3.2 Hệ số lương làm thêm: - Ngày thường: 150% lương giờ tiêu chuẩn. - Ngày cuối tuần: 200% lương giờ tiêu chuẩn. - Ngày lễ: 300% lương giờ tiêu chuẩn. === Phần 4: Remote work policy === 4.1 Điều kiện remote: - Nhân viên sau probation period có thể làm remote tối đa 2 ngày/tuần. - Team Lead phải phê duyệt lịch remote qua HR Portal. - Ngày onsite bắt buộc: Thứ 3 và Thứ 5 theo lịch team. 4.2 Yêu cầu kỹ thuật khi remote: - Kết nối VPN bắt buộc khi làm việc với hệ thống nội bộ. - Camera bật trong các cuộc họp team. === Phần 5: Liên hệ HR === Email: hr@company.internal Hotline: ext. 2000 HR Portal: https://hr.company.internal Giờ làm việc: Thứ 2 - Thứ 6, 8:30 - 17:30",
+      "source": "hr_leave_policy.txt",
+      "score": 0.5831,
+      "metadata": {
+        "chunk_id": "hr_leave_policy.txt__chunk1",
+        "source": "hr_leave_policy.txt"
+      }
+    },
+    {
+      "text": "IT HELPDESK FAQ — CÂU HỎI THƯỜNG GẶP Source: support/helpdesk-faq.md Department: IT Effective Date: 2026-01-20 Access: internal === Section 1: Tài khoản và mật khẩu === Q: Tôi quên mật khẩu, phải làm gì? A: Truy cập https://sso.company.internal/reset hoặc liên hệ Helpdesk qua ext. 9000. Mật khẩu mới sẽ được gửi qua email công ty trong vòng 5 phút. Q: Tài khoản bị khóa sau bao nhiêu lần đăng nhập sai? A: Tài khoản bị khóa sau 5 lần đăng nhập sai liên tiếp. Để mở khóa, liên hệ IT Helpdesk hoặc tự reset qua portal SSO. Q: Mật khẩu cần thay đổi định kỳ không? A: Có. Mật khẩu phải được thay đổi mỗi 90 ngày. Hệ thống sẽ nhắc nhở 7 ngày trước khi hết hạn. === Section 2: VPN và kết nối từ xa === Q: Phần mềm VPN nào công ty dùng? A: Công ty sử dụng Cisco AnyConnect. Download tại https://vpn.company.internal/download. Q: Tôi bị mất kết nối VPN liên tục, phải làm gì? A: Kiểm tra kết nối Internet trước. Nếu vẫn lỗi, tạo ticket P3 với log file VPN đính kèm. Q: VPN có giới hạn số thiết bị không? A: Mỗi tài khoản được kết nối VPN trên tối đa 2 thiết bị cùng lúc. === Section 3: Phần mềm và license === Q: Tôi cần cài phần mềm mới, phải làm gì? A: Gửi yêu cầu qua Jira project IT-SOFTWARE. Line Manager phải phê duyệt trước khi IT cài đặt. Q: Ai chịu trách nhiệm gia hạn license phần mềm? A: IT Procurement team quản lý tất cả license. Nhắc nhở sẽ được gửi 30 ngày trước khi hết hạn. === Section 4: Thiết bị và phần cứng === Q: Laptop mới được cấp sau bao lâu khi vào công ty? A:",
+      "source": "it_helpdesk_faq.txt",
+      "score": 0.5114,
+      "metadata": {
+        "source": "it_helpdesk_faq.txt",
+        "chunk_id": "it_helpdesk_faq.txt__chunk0"
+      }
+    },
+    {
+      "text": "2: CS Agent xem xét trong vòng 1 ngày làm việc và xác nhận điều kiện đủ điều kiện. Bước 3: Nếu đủ điều kiện, chuyển yêu cầu sang Finance Team để xử lý hoàn tiền. Bước 4: Finance Team xử lý trong 3-5 ngày làm việc và thông báo kết quả cho khách hàng. === Điều 5: Hình thức hoàn tiền === - Hoàn tiền qua phương thức thanh toán gốc: áp dụng trong 100% trường hợp đủ điều kiện. - Hoàn tiền qua credit nội bộ (store credit): khách hàng có thể chọn nhận store credit thay thế với giá trị 110% so với số tiền hoàn. === Điều 6: Liên hệ và hỗ trợ === Email: cs-refund@company.internal Hotline nội bộ: ext. 1234 Giờ làm việc: Thứ 2 - Thứ 6, 8:00 - 17:30",
+      "source": "policy_refund_v4.txt",
+      "score": 0.5054,
+      "metadata": {
+        "source": "policy_refund_v4.txt",
+        "chunk_id": "policy_refund_v4.txt__chunk1"
+      }
+    }
+  ],
+  "retrieved_sources": [
+    "hr_leave_policy.txt",
+    "it_helpdesk_faq.txt",
+    "policy_refund_v4.txt"
+  ],
+  "policy_result": {},
+  "mcp_tools_used": [],
+  "final_answer": "Nhân viên được làm remote tối đa 2 ngày mỗi tuần, sau khi đã hoàn thành probation period và phải có sự phê duyệt lịch remote từ Team Lead qua HR Portal. Ngày onsite bắt buộc là Thứ 3 và Thứ 5 theo lịch team [1].",
+  "sources": [
+    "hr_leave_policy.txt"
+  ],
+  "confidence": 0.74,
+  "history": [
+    "[supervisor] received task: Nhân viên được làm remote tối đa mấy ngày mỗi tuần?",
+    "[supervisor] route=retrieval_worker reason=task contains retrieval/SLA keyword",
+    "[retrieval_worker] retrieved 3 chunks from ['hr_leave_policy.txt', 'it_helpdesk_faq.txt', 'policy_refund_v4.txt']",
+    "[synthesis_worker] answer_len=211, confidence=0.74, sources=['hr_leave_policy.txt']",
+    "[graph] completed in 25022ms"
+  ],
+  "workers_called": [
+    "retrieval_worker",
+    "synthesis_worker"
+  ],
+  "supervisor_route": "retrieval_worker",
+  "latency_ms": 25022,
+  "run_id": "run_20260414_173936",
+  "worker_io_logs": [
+    {
+      "worker": "retrieval_worker",
+      "input": {
+        "task": "Nhân viên được làm remote tối đa mấy ngày mỗi tuần?",
+        "top_k": 3
+      },
+      "output": {
+        "chunks_count": 3,
+        "sources": [
+          "hr_leave_policy.txt",
+          "it_helpdesk_faq.txt",
+          "policy_refund_v4.txt"
+        ]
+      },
+      "error": null
+    },
+    {
+      "worker": "synthesis_worker",
+      "timestamp": "2026-04-14T10:39:56.810748+00:00",
+      "input": {
+        "task": "Nhân viên được làm remote tối đa mấy ngày mỗi tuần?",
+        "chunks_count": 3,
+        "has_policy": false,
+        "exceptions_count": 0
+      },
+      "output": {
+        "answer_length": 211,
+        "sources": [
+          "hr_leave_policy.txt"
+        ],
+        "sources_count": 1,
+        "confidence": 0.74,
+        "abstained": false,
+        "hitl_triggered": false
+      },
+      "error": null
+    }
+  ],
+  "question_id": "q05"
+}

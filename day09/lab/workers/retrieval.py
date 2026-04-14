@@ -35,7 +35,7 @@ def _load_env():
 # ─────────────────────────────────────────────
 
 WORKER_NAME = "retrieval_worker"
-DEFAULT_TOP_K = 3
+DEFAULT_TOP_K = 5
 
 # Đường dẫn tới thư mục docs (tương đối từ lab/)
 DOCS_DIR = Path(__file__).parent.parent / "data" / "docs"
