@@ -29,9 +29,22 @@ Chạy thử:
 """
 
 import os
+import sys
 import json
 from datetime import datetime
 from typing import Any, Dict, List, Optional
+
+# ─────────────────────────────────────────────
+# FastAPI HTTP Server (Sprint 3 Bonus)
+# ─────────────────────────────────────────────
+
+try:
+    from fastapi import FastAPI
+    from pydantic import BaseModel
+    import uvicorn
+    HAS_FASTAPI = True
+except ImportError:
+    HAS_FASTAPI = False
 
 
 # ─────────────────────────────────────────────
@@ -133,12 +146,7 @@ TOOL_SCHEMAS = {
 # ─────────────────────────────────────────────
 
 def tool_search_kb(query: str, top_k: int = 3) -> dict:
-    """
-    Tìm kiếm Knowledge Base bằng semantic search.
-
-    TODO Sprint 3: Kết nối với ChromaDB thực.
-    Hiện tại: Delegate sang retrieval worker.
-    """
+    """Tìm kiếm Knowledge Base bằng semantic search — delegate sang retrieval worker."""
     try:
         # Tái dùng retrieval logic từ workers/retrieval.py
         import sys
@@ -287,6 +295,30 @@ TOOL_REGISTRY = {
 }
 
 
+# ─────────────────────────────────────────────
+# FastAPI HTTP App (exposed only if FastAPI installed)
+# ─────────────────────────────────────────────
+
+if HAS_FASTAPI:
+    app = FastAPI(title="MCP Server — Day 09 Lab", version="1.0.0")
+
+    class ToolCallRequest(BaseModel):
+        tool: str
+        input: dict = {}
+
+    @app.get("/health")
+    def http_health():
+        return {"status": "ok", "tools": list(TOOL_REGISTRY.keys())}
+
+    @app.get("/tools/list")
+    def http_list_tools():
+        return list_tools()
+
+    @app.post("/tools/call")
+    def http_call_tool(req: ToolCallRequest):
+        return dispatch_tool(req.tool, req.input)
+
+
 def list_tools() -> list:
     """
     MCP discovery: trả về danh sách tools có sẵn.
@@ -332,6 +364,21 @@ def dispatch_tool(tool_name: str, tool_input: dict) -> dict:
 # ─────────────────────────────────────────────
 
 if __name__ == "__main__":
+    # ─── HTTP Server mode ───────────────────────────────────
+    if "--serve" in sys.argv:
+        if not HAS_FASTAPI:
+            print("ERROR: fastapi/uvicorn chưa install.")
+            print("       pip install fastapi uvicorn")
+            sys.exit(1)
+        port = int(os.getenv("MCP_SERVER_PORT", "8000"))
+        print(f"MCP HTTP Server -> http://localhost:{port}")
+        print(f"  GET  /health")
+        print(f"  GET  /tools/list")
+        print(f"  POST /tools/call")
+        uvicorn.run(app, host="0.0.0.0", port=port)
+        sys.exit(0)
+
+    # ─── Test mode (default) ───────────────────────────────
     print("=" * 60)
     print("MCP Server — Tool Discovery & Test")
     print("=" * 60)
@@ -375,4 +422,4 @@ if __name__ == "__main__":
     print(f"  Error: {err.get('error')}")
 
     print("\n✅ MCP server test done.")
-    print("\nTODO Sprint 3: Implement HTTP server nếu muốn bonus +2.")
+    print("\n(Optional) HTTP server: implement với FastAPI nếu muốn bonus +2.")
