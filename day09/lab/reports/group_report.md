@@ -1,13 +1,13 @@
 # Báo Cáo Nhóm — Lab Day 09: Multi-Agent Orchestration
 
-**Tên nhóm:** __C401 - C5_____  
+**Tên nhóm:** C401 - C5  
 **Thành viên:**
 | Tên | Vai trò | Mã học viên |
 |-----|---------|-------|
 | Nguyễn Khánh Nam | Supervisor Owner | ___ |
 | Đỗ Minh Phúc | Worker Owner | ___ |
 | Lê Tú Nam | Worker Owner | ___ |
-| Lê Hữu Hưng | Worker Owner | ___ |
+| Lê Hữu Hưng | Worker Owner | 2A202600098 |
 | Chu Minh Quân | MCP Owner | ___ |
 | Nguyễn Minh Hiếu | Trace & Docs Owner | ___ |
 
@@ -17,61 +17,74 @@
 
 ---
 
-> **Hướng dẫn nộp group report:**
-> 
-> - File này nộp tại: `reports/group_report.md`
-> - Deadline: Được phép commit **sau 18:00** (xem SCORING.md)
-> - Tập trung vào **quyết định kỹ thuật cấp nhóm** — không trùng lặp với individual reports
-> - Phải có **bằng chứng từ code/trace** — không mô tả chung chung
-> - Mỗi mục phải có ít nhất 1 ví dụ cụ thể từ code hoặc trace thực tế của nhóm
+## 1. Kiến trúc nhóm đã xây dựng
 
----
+**Hệ thống tổng quan:**  
+Nhóm xây dựng hệ thống theo mô hình **Supervisor-Worker** với 1 Supervisor điều phối và 3 Workers chuyên biệt: `retrieval_worker` (dense retrieval từ ChromaDB), `policy_tool_worker` (kiểm tra luật nghiệp vụ + MCP), và `synthesis_worker` (tổng hợp câu trả lời với citation). Ngoài ra có node `human_review` (HITL) cho các trường hợp rủi ro cao. Graph được implement bằng Python thuần (không cần LangGraph), đủ để trace toàn bộ pipeline qua `AgentState` TypedDict dùng chung.
 
-## 1. Kiến trúc nhóm đã xây dựng (150–200 từ)
+**Routing logic cốt lõi:**  
+Supervisor dùng **keyword matching + regex** với 2 nhóm từ khóa độc lập:
+- Policy keywords (`"hoàn tiền"`, `"refund"`, `"flash sale"`, `"license"`, `"cấp quyền"`, `"level 2/3"`, ...) → `policy_tool_worker`  
+- Retrieval keywords (`"p1"`, `"sla"`, `"ticket"`, `"escalat"`, `"mật khẩu"`, `"remote"`, ...) → `retrieval_worker`  
+- Regex `\berr-[a-z0-9\-]+\b` phát hiện mã lỗi lạ → `human_review` (HITL)  
+- Nếu câu hỏi chứa từ khóa của **cả hai nhóm** (VD: `"level 3"` + `"p1"`) → multi-hop, route sang `policy_tool_worker` và gọi tiếp `retrieval_worker`
 
-**Hệ thống tổng quan:**
-Nhóm đã xây dựng hệ thống theo mô hình **Supervisor-Worker**, chia nhỏ quy trình RAG thành các thành phần chuyên biệt. Hệ thống gồm 1 Supervisor điều phối và 3 Workers chính: `retrieval_worker` (truy xuất DB), `policy_tool_worker` (kiểm tra luật & ngoại lệ qua MCP), và `synthesis_worker` (tổng hợp câu trả lời). Kiến trúc này giúp tách biệt logic xử lý tài liệu khỏi logic kiểm tra chính sách nghiệp vụ.
+Qua 36 lần chạy với 17 loại câu hỏi: **50% route sang `policy_tool_worker`**, **50% route sang `retrieval_worker`**, phản ánh đúng sự phân bổ đa dạng của test cases.
 
 **Routing logic cốt lõi:**
 Supervisor sử dụng **Keyword & Regex matching** để đưa ra quyết định routing. Các từ khóa về SLA/Ticket được route sang `retrieval_worker`. Các từ khóa về hoàn tiền/cấp quyền được route sang `policy_tool_worker`. Trường hợp câu hỏi multi-hop (vừa có access control + SLA) được nhận diện riêng và gọi cả 2 workers. Hệ thống nhận diện mã lỗi không xác định (`err-xxx`) để route sang `human_review` node — node này auto-approve trong lab mode rồi tiếp tục về `retrieval_worker`, đồng thời đặt `hitl_triggered = True` trong trace.
 
-**MCP tools đã tích hợp:**
-- `search_kb`: Công cụ tìm kiếm Knowledge Base nội bộ, cho phép `policy_tool_worker` tự động truy xuất thêm thông tin mà không phụ thuộc vào `retrieval_worker`.
-- `get_ticket_info`: Tra cứu thông tin Jira ticket thật (mocked) để kiểm tra trạng thái SLA và người phụ trách.
-- `check_access_permission`: Kiểm tra ma trận phê duyệt (Approval Matrix) cho các yêu cầu cấp quyền Level 1/2/3.
+**MCP tools đã tích hợp:**  
+- `search_kb`: tìm kiếm thêm trong ChromaDB khi `needs_tool=True`  
+- `get_ticket_info`: tra cứu thông tin Jira ticket (mocked)  
+- `check_access_permission`: kiểm tra approval matrix Level 1/2/3  
+- `create_ticket`: tạo ticket mới (mock)
 
 ---
 
-## 2. Quyết định kỹ thuật quan trọng nhất (200–250 từ)
+## 2. Quyết định kỹ thuật quan trọng nhất
 
-**Quyết định:** Chấp nhận đánh đổi **Độ trễ (Latency)** để đổi lấy **Tính minh bạch (Observability)** qua mô hình Multi-Agent.
+**Quyết định chính: Chấp nhận đánh đổi Latency để lấy Observability.**
 
-**Bối cảnh vấn đề:**
-Trong Day 08, nhóm sử dụng một Single Agent RAG duy nhất. Khi hệ thống trả lời sai (ví dụ: trả lời nhầm chính sách v3 thay vì v4), rất khó để xác định lỗi nằm ở bước nào (truy xuất sai hay suy luận sai). Team cần một cách để "mổ xẻ" pipeline và kiểm soát chặt chẽ từng chặng.
+**Bối cảnh vấn đề:**  
+Day 08 dùng Single Agent RAG — khi trả lời sai (VD: áp sai policy v3 thay vì v4), không có cách nào xác định lỗi nằm ở bước retrieval hay suy luận. Nhóm cần kiểm soát được từng chặng của pipeline.
 
 **Các phương án đã cân nhắc:**
 
 | Phương án | Ưu điểm | Nhược điểm |
 |-----------|---------|-----------|
-| Single Agent (Day 08) | Nhanh, rẻ (1 LLM call), đơn giản. | "Hộp đen", khó debug, dễ bị hallucinate khi câu hỏi phức tạp. |
-| **Supervisor-Worker (Day 09)** | Minh bạch, dễ debug, kiểm soát được output từng worker. | Tốn kém (nhiều LLM call), độ trễ cao, logic điều phối phức tạp. |
+| Single Agent (Day 08) | Nhanh (~1,850ms), ít LLM call | "Hộp đen", không biết bước nào sai, dễ hallucinate |
+| **Supervisor-Worker (Day 09)** | Trace rõ từng node, kiểm soát được output, multi-hop chính xác | Latency tăng (~16,315ms avg), nhiều LLM call hơn |
 
-**Phương án đã chọn và lý do:**
-Nhóm chọn **Supervisor-Worker**. Lý do chính là để giải quyết bài toán **Governance & Debuggability**. Trong môi trường doanh nghiệp (IT Helpdesk), việc biết *tại sao* AI đưa ra quyết định quan trọng hơn là tốc độ nhanh hơn vài trăm miligiây. Việc tách biệt `policy_tool_worker` cho phép nhóm cập nhật các quy định hoàn tiền mới mà không ảnh hưởng đến phần truy xuất dữ liệu kỹ thuật.
+**Phương án chọn:** Supervisor-Worker, vì bài toán IT Helpdesk doanh nghiệp cần **Governance** hơn là tốc độ.
 
-**Bằng chứng từ code:**
-Trong `graph.py`, mỗi bước đi qua Supervisor đều ghi lại `route_reason` cực kỳ chi tiết:
+**Quyết định phụ: Fail-loud trong `route_decision()` thay vì silent fallback.**  
+Khi `supervisor_route` rỗng hoặc không hợp lệ, hệ thống raise `ValueError` ngay lập tức thay vì fallback về default. Lý do: lỗi routing ẩn rất khó phát hiện khi chạy production.
+
 ```python
-if is_multi_hop:
-    route = "policy_tool_worker"
-    route_reason = "multi-hop: access control + SLA context"
-    needs_tool = True
-    risk_high = True
+# graph.py — route_decision()
+if not route:
+    raise ValueError(
+        f"[route_decision] supervisor_route is empty — "
+        f"supervisor_node chưa chạy hoặc state bị corrupt. "
+        f"run_id={state.get('run_id')}"
+    )
+if route not in VALID_ROUTES:
+    raise ValueError(
+        f"[route_decision] unknown route: '{route}'. "
+        f"Expected one of {VALID_ROUTES}."
+    )
 ```
+
+**Bằng chứng từ trace:** Trong 36 lần chạy, không có lần nào bị silent wrong-route — tất cả đều có `route_reason` rõ ràng, ví dụ `"multi-hop: access control + SLA context | risk_high flagged"` cho câu `"Cần cấp quyền Level 3 để khắc phục P1 khẩn cấp"`.
 
 ---
 
-## 3. Kết quả grading questions (150–200 từ)
+## 3. Kết quả test questions
+
+Nhóm đã chạy pipeline trên 17 loại câu hỏi (36 traces tổng cộng):
+
+**Routing Distribution:**
 
 Nhóm đã chạy pipeline với **10 câu grading questions** (gq01–gq10) trong khung 17:00–18:00. Kết quả được lưu tại `artifacts/grading_run.jsonl`.
 
@@ -145,11 +158,13 @@ Việc debug MCP tool call tốn nhiều thời gian hơn dự kiến do các th
 
 ---
 
-## 6. Nếu có thêm 1 ngày, nhóm sẽ làm gì? (50–100 từ)
+## 6. Nếu có thêm 1 ngày, nhóm sẽ làm gì?
 
-Nhóm sẽ thực hiện 2 cải tiến:
-1.  **Async Orchestration:** Chuyển đổi graph sang xử lý bất đồng bộ (Asyncio) để các workers có thể chạy song song, giảm latency tổng thể xuống mức < 2 giây.
-2.  **Semantic Supervisor:** Thay thế keyword matching bằng một model nhỏ (ví dụ: `bert-base-uncased` hoặc LLM few-shot) để phân loại Task chính xác hơn, tránh lỗi khi người dùng sử dụng từ lóng hoặc câu hỏi chồng lấn domain.
+Nhóm sẽ thực hiện 2 cải tiến dựa trên trace thực tế:
+
+1. **Async Orchestration:** `build_graph()` hiện chạy tuần tự — latency ~16s phần lớn là LLM wait time. Chuyển sang `asyncio.gather()` để `retrieval_worker` và `policy_tool_worker` chạy song song có thể giảm latency xuống ~8–10s. Bằng chứng: trace `run_20260414_174518.json` ghi 47,899ms cho câu Flash Sale — retrieval và policy chạy nối tiếp nhau không cần thiết.
+
+2. **Semantic Supervisor:** Keyword matching hiện không phân biệt được câu như `"Mật khẩu Flash Sale"` (retrieval keyword `"mật khẩu"` override policy keyword `"flash sale"`). Thay bằng embedding-based intent classifier (BERT few-shot hoặc LLM zero-shot) sẽ xử lý chính xác hơn các câu chồng lấn domain.
 
 ---
 
