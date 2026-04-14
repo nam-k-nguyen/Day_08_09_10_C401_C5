@@ -28,16 +28,12 @@ def _load_env():
     except ImportError:
         pass
 
-# ─────────────────────────────────────────────
-# Worker Contract (xem contracts/worker_contracts.yaml)
-# Input:  {"task": str, "top_k": int = 3}
-# Output: {"retrieved_chunks": list, "retrieved_sources": list, "worker_io_logs": list}
-# ─────────────────────────────────────────────
+
 
 WORKER_NAME = "retrieval_worker"
 DEFAULT_TOP_K = 3
 
-# Đường dẫn tới thư mục docs (tương đối từ lab/)
+
 DOCS_DIR = Path(__file__).parent.parent / "data" / "docs"
 CHROMA_PATH = Path(__file__).parent.parent / "chroma_db"
 
