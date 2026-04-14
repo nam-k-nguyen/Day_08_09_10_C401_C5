@@ -28,11 +28,7 @@ def _load_env():
     except ImportError:
         pass
 
-# ─────────────────────────────────────────────
-# Worker Contract (xem contracts/worker_contracts.yaml)
-# Input:  {"task": str, "top_k": int = 3}
-# Output: {"retrieved_chunks": list, "retrieved_sources": list, "worker_io_logs": list}
-# ─────────────────────────────────────────────
+
 
 WORKER_NAME = "retrieval_worker"
 DEFAULT_TOP_K = 3
